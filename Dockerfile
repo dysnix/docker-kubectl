@@ -8,7 +8,7 @@ ENV HELM_VERSION="v3.2.1" \
     SOPS_VERSION="v3.5.0" \
     SOPS_SHA256="610fca9687d1326ef2e1a66699a740f5dbd5ac8130190275959da737ec52f096"
 
-RUN apk add --no-cache ca-certificates git bash curl jq && \
+RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils && \
   ## Install kubectl of a given version \
     ( cd /usr/local/bin && curl --retry 3 -sSLO \
         "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
