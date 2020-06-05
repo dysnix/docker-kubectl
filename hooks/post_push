@@ -1,13 +1,22 @@
 #!/bin/bash
 ## https://docs.docker.com/docker-hub/builds/advanced/
 
-## GIT_BRANCH equals both invoking branch or tag.
-## Strip of a release suffix
-_stripped=${DOCKER_REPO}:${GIT_BRANCH%-r*}
-if [ ${IMAGE_NAME} != ${_stripped} ]; then
-  docker image tag ${IMAGE_NAME} ${_stripped}
-  docker image push ${_stripped}
-fi
+## Releases the image with a new tag
+release_image() {
+  local newtag="$1"
+  if [ ${IMAGE_NAME} != "${DOCKER_REPO}:${newtag}" ]; then
+    docker image tag ${IMAGE_NAME} "${DOCKER_REPO}:${newtag}"
+    docker image push "${DOCKER_REPO}:${newtag}"
+  fi
+}
+
+## release image with a release stripped stripped
+stripped_tag="${GIT_BRANCH%-r*}"
+release_image $stripped_tag
+
+## release image with a stripped patch version
+stripped_patch="${stripped_tag%.*}"
+release_image $stripped_patch
 
 ## update microbadger
 if [ -n "$MICROBADGER_TOKEN" ]; then

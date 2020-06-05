@@ -3,29 +3,9 @@
 
 ## GIT_BRANCH equals both invoking branch or tag.
 ## Strip of a release suffix
-
-gh_repo="kubernetes/kubernetes"
-tag_re='v[0-9]+\.[0-9]+\.[0-9]+$'
-
-kubectl_release="${GIT_BRANCH%-r*}" # strip suffix r12 (-r*)
-per_page=200
-tags_file="/tmp/$$.tags_file"
-:> $tags_file
-
-cleanup() { rm -f $tags_file; }
-trap cleanup EXIT
-
-## get full latest version
-curl -sSL "https://api.github.com/repos/${gh_repo}/tags?page=1&per_page=${per_page}" \
-  | jq -r '.[].name' 2>/dev/null | grep -E "$tag_re" > $tags_file
-
-latest_version=$(cat "$tags_file" | sort -nr | uniq | grep "${kubectl_release}" | head -n1)
-
-if [ -z "$latest_version" ]; then
-  echo "Unable to get version. Aborting..."
-fi
+version="${GIT_BRANCH%-r*}" # strip suffix r12 (-r*)
 
 ## build image
 docker build \
-  --build-arg KUBECTL_VERSION=$latest_version \
+  --build-arg KUBECTL_VERSION=$version \
   -t ${IMAGE_NAME} .
