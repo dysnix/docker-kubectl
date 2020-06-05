@@ -12,21 +12,22 @@ pages=3
 tags_file="/tmp/$$.tags_file"
 :> $tags_file
 
-cleanup(); { rm -f $tags_file; }
+cleanup() { rm -f $tags_file; }
 trap cleanup EXIT
 
 ## cycle through pages
 pn=0
 while [ $pn -le 10 ]; do
-  tags=$(curl -L "https://api.github.com/repos/${gh_repo}/tags?page=${pn}" | jq -r '.[].name' | grep -E "$tag_re")
+  tags=$(curl -sSL "https://api.github.com/repos/${gh_repo}/tags?page=${pn}" | jq -r '.[].name' | grep -E "$tag_re")
   echo "$tags" >> $tags_file
   if [ -z "$tags" ]; then break; fi
   pn=$((pn+1))
 done
 
 ## get full latest version
-latest_version=$(cat $tags_file | sort -nr | uniq | grep "v${kubectl_relases}" | head -n1)
+latest_version=$(cat  "$tags_file" | sort -nr | uniq | grep "${kubectl_release}" | head -n1)
 
+## build image
 docker build \
   --build-arg KUBECTL_VERSION=$latest_version \
   -t $IMAGE_NAME .
