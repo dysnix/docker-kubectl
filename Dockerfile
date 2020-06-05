@@ -32,7 +32,7 @@ RUN apk add --no-cache ca-certificates git bash curl jq && \
   ## Cleanup
     rm -rf /tmp/*
 
-RUN adduser helm -u 1001 -D
+RUN adduser kubectl -u 1001 -D
 USER kubectl
 WORKDIR /home/kubectl
 
