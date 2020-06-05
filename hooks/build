@@ -7,8 +7,7 @@
 gh_repo="kubernetes/kubernetes"
 tag_re='v[0-9]+\.[0-9]+\.[0-9]+$'
 
-kubectl_release="${GIT_BRANCH#*-}" # strip prefix v3-... (*-)
-kubectl_release="${kubectl_release%-r*}" # strip suffix r12 (-r*)
+kubectl_release="${GIT_BRANCH%-r*}" # strip suffix r12 (-r*)
 pages=3
 tags_file="/tmp/$$.tags_file"
 :> $tags_file
