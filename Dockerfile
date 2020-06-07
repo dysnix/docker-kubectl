@@ -24,16 +24,17 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils && \
     ( cd /usr/local/bin && curl -sSLo sops \
         "https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux" && \
       printf "${SOPS_SHA256}  sops" | sha256sum -c && chmod 755 sops ) && \
-  ## Install plugins \
-    helm plugin install https://github.com/databus23/helm-diff --version v3.1.1 && \
-    helm plugin install https://github.com/futuresimple/helm-secrets && \
-    helm plugin install https://github.com/hypnoglow/helm-s3.git && \
-    helm plugin install https://github.com/aslafy-z/helm-git.git && \
   ## Cleanup
     rm -rf /tmp/*
 
 RUN adduser kubectl -u 1001 -D
 USER kubectl
 WORKDIR /home/kubectl
+
+## Install plugins (unprivilged)
+RUN helm plugin install https://github.com/databus23/helm-diff --version v3.1.1 && \
+    helm plugin install https://github.com/futuresimple/helm-secrets && \
+    helm plugin install https://github.com/hypnoglow/helm-s3.git && \
+    helm plugin install https://github.com/aslafy-z/helm-git.git
 
 CMD ["/usr/local/bin/kubectl"]
