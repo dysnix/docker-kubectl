@@ -1,10 +1,7 @@
 #!/bin/bash
 ## https://docs.docker.com/docker-hub/builds/advanced/
 
-## Rleases must be of the following pattern v1.17.6 or v1.17.6-r1 only!
-#
-
-readarray -d'-' -t parts <<< "$GIT_BRANCH"
+readarray -d'-' -t parts <<< $(echo "$GIT_BRANCH")
 version=${parts[0]}
 release=${parts[1]}
 IFS=' ' read -r -a flavours <<< "${FLAVOURS:-_}"
@@ -25,8 +22,26 @@ release_list() {
   done
 }
 
+## Make additional image tags and push them
+tag_and_push() {
+  local basetag=$1 tag
+  shift
+
+  for tag in $@; do
+    docker image tag $DOCKER_REPO:$basetag ${DOCKER_REPO}:$tag
+    docker image push ${DOCKER_REPO}:$tag
+  done
+}
+
 release_list | while read line; do
   read tag dockerfile <<< $(echo $line)
-  docker build \
-    --build-arg KUBECTL_VERSION=$version -t $DOCKER_REPO:$tag -f $dockerfile
+
+  stripped_release="${tag%-r*}"
+  stripped_patch=$(echo $stripped_release | sed -r 's/^(v[0-9]+.[0-9]+).[0-9]+/\1/')
+  tag_and_push $tag $stripped_release $stripped_patch
 done
+
+## update microbadger
+if [ -n "$MICROBADGER_TOKEN" ]; then
+  curl -XPOST "https://hooks.microbadger.com/images/${DOCKER_REPO}/${MICROBADGER_TOKEN}"
+fi
