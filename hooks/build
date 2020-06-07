@@ -19,14 +19,15 @@ release_list() {
     dockerfile="Dockerfile.$flavour"
     dockerfile="${dockerfile%._}"
     tag="${version}-${flavour}-${release}"
-    tag=$(echo $tag | sed 's/-_-/-/')
+    tag=$(echo $tag | sed -e 's/-_-/-/' -e 's/-$//')
 
     echo $tag $dockerfile
   done
 }
 
+## Builds multiflavour images
 release_list | while read line; do
   read tag dockerfile <<< $(echo $line)
-  echo docker build \
-    --build-arg KUBECTL_VERSION=$version -t $DOCKER_REPO:$tag -f $dockerfile
+  docker build \
+    --build-arg KUBECTL_VERSION=$version -t $DOCKER_REPO:$tag -f $dockerfile .
 done

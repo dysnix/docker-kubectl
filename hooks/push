@@ -16,7 +16,7 @@ release_list() {
     dockerfile="Dockerfile.$flavour"
     dockerfile="${dockerfile%._}"
     tag="${version}-${flavour}-${release}"
-    tag=$(echo $tag | sed 's/-_-/-/')
+    tag=$(echo $tag | sed -e 's/-_-/-/' -e 's/-$//')
 
     echo $tag $dockerfile
   done
