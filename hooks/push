@@ -1,10 +1,10 @@
 #!/bin/bash
 ## https://docs.docker.com/docker-hub/builds/advanced/
 
-readarray -d'-' -t parts <<< $(echo "$GIT_BRANCH")
+IFS=' ' read -r -a flavours <<< "${FLAVOURS:-_}"
+IFS='-' read -r -a parts <<< "$GIT_BRANCH"
 version=${parts[0]}
 release=${parts[1]}
-IFS=' ' read -r -a flavours <<< "${FLAVOURS:-_}"
 
 ## Print a release list (tag docker) pairs, like bellow:
 #   v1.17.6-r0 Dockerfile
@@ -34,7 +34,7 @@ tag_and_push() {
 }
 
 release_list | while read line; do
-  read tag dockerfile <<< $(echo $line)
+  read tag dockerfile <<< "$line"
 
   stripped_release="${tag%-r*}"
   stripped_patch=$(echo $stripped_release | sed -r 's/^(v[0-9]+.[0-9]+).[0-9]+/\1/')

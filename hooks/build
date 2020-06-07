@@ -4,10 +4,10 @@
 ## Rleases must be of the following pattern v1.17.6 or v1.17.6-r1 only!
 #
 
-readarray -d'-' -t parts <<< "$GIT_BRANCH"
+IFS=' ' read -r -a flavours <<< "${FLAVOURS:-_}"
+IFS='-' read -r -a parts <<< "$GIT_BRANCH"
 version=${parts[0]}
 release=${parts[1]}
-IFS=' ' read -r -a flavours <<< "${FLAVOURS:-_}"
 
 ## Print a release list (tag docker) pairs, like bellow:
 #   v1.17.6-r0 Dockerfile
@@ -27,6 +27,6 @@ release_list() {
 
 release_list | while read line; do
   read tag dockerfile <<< $(echo $line)
-  docker build \
+  echo docker build \
     --build-arg KUBECTL_VERSION=$version -t $DOCKER_REPO:$tag -f $dockerfile
 done
