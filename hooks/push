@@ -43,5 +43,5 @@ done
 
 ## update microbadger
 if [ -n "$MICROBADGER_TOKEN" ]; then
-  curl -XPOST "https://hooks.microbadger.com/images/${DOCKER_REPO}/${MICROBADGER_TOKEN}"
+  curl -XPOST "https://hooks.microbadger.com/images/${DOCKER_REPO#index.docker.io/}/${MICROBADGER_TOKEN}"
 fi
