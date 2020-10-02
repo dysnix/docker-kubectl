@@ -1,0 +1,12 @@
+curl:
+  helm:
+    version: v3.3.4
+  helmfile:
+    version: v0.130.1
+    sha256: 606beae471f856a67933767f971423fd31e109728e83771f7a4bf5c6c191f346
+  sops:
+    version: v3.6.1
+    sha256: b2252aa00836c72534471e1099fa22fab2133329b62d7826b5ac49511fcc8997
+  yq:
+    version: "3.4.0"
+    sha256: f6bd1536a743ab170b35c94ed4c7c4479763356bd543af5d391122f4af852460
