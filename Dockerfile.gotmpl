@@ -28,7 +28,7 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils && \
   ## Cleanup
     rm -rf /tmp/*
 
-RUN adduser kubectl -u 1001 -D -h /dysnix/kubectl
+RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl
 USER kubectl
 WORKDIR /dysnix/kubectl
 
