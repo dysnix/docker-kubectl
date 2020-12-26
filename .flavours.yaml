@@ -2,3 +2,5 @@ _:
   image: alpine:3.12
 gcloud:
   image: google/cloud-sdk:alpine
+root:
+  image: alpine:3.12

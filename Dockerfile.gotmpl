@@ -1,8 +1,9 @@
 # Templated variables
 # {{ $tools := datasource "tools" }}
-# {{ $flavour := index (datasource "flavours") (getenv "FLAVOUR" "_") }}
+# {{ $flavour := getenv "FLAVOUR" "_" }}
+# {{ $opts := index (datasource "flavours") $flavour }}
 
-FROM {{ $flavour.image }}
+FROM {{ $opts.image }}
 ARG KUBECTL_VERSION
 
 RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
@@ -28,9 +29,12 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
   ## Cleanup
     rm -rf /tmp/*
 
+{{- if ! (eq $flavour "root") }}
 RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl
 USER kubectl
+{{- else }}
 WORKDIR /dysnix/kubectl
+{{- end }}
 
 ## Install plugins (unprivilged)
 RUN helm plugin install https://github.com/databus23/helm-diff && \
