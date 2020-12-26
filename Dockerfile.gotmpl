@@ -29,10 +29,10 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
   ## Cleanup
     rm -rf /tmp/*
 
-{{- if ! (eq $flavour "root") }}
+{{ if not (eq $flavour "root") }}
 RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl
 USER kubectl
-{{- end }}
+{{ end }}
 
 WORKDIR /dysnix/kubectl
 
