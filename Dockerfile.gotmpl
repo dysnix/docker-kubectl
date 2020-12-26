@@ -32,9 +32,9 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
 {{- if ! (eq $flavour "root") }}
 RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl
 USER kubectl
-{{- else }}
-WORKDIR /dysnix/kubectl
 {{- end }}
+
+WORKDIR /dysnix/kubectl
 
 ## Install plugins (unprivilged)
 RUN helm plugin install https://github.com/databus23/helm-diff && \
