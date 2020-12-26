@@ -5,7 +5,7 @@
 FROM {{ $flavour.image }}
 ARG KUBECTL_VERSION
 
-RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils && \
+RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
   ## Install kubectl of a given version \
     ( cd /usr/local/bin && curl --retry 3 -sSLO \
         "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
