@@ -5,7 +5,7 @@
 #
 . ./hooks/.helpers
 
-IFS='-' read -r -a parts <<< "$GIT_BRANCH"
+IFS='-' read -r -a parts <<< "$SOURCE_BRANCH"
 version=${parts[0]}
 release=${parts[1]}
 
