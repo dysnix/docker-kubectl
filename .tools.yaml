@@ -8,5 +8,5 @@ curl:
     version: v3.7.0
     sha256: 3efe1dc686cdf60ad6f9448f198e16a007c72a8d820d8d0a81de27f02a9f7c16
   yq:
-    version: "4.6.3"
-    sha256: 8060cee30f99f96182cc33ee7c822653873ddc7ec634089c8857e2c6377996ff
+    version: v4.6.3
+    sha256: c4343783c3361495c0d6d1eb742bba7432aa65e13e9fb8d7e201d544bcf14246
