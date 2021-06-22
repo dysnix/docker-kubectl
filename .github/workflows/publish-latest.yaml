@@ -1,0 +1,47 @@
+name: Publish latest
+
+on: 
+  push:
+    branches:
+    - '**'
+
+jobs:
+  publish:
+    name: Pubish new tag
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        versionRegex:
+         - v1\.17\.[0-9]+$
+         - v1\.19\.[0-9]+$
+         - v1\.20\.[0-9]+$
+         - v1\.21\.[0-9]+$
+
+    steps:
+    - uses: actions/checkout@v2
+    -
+      uses: dysnix/find-latest-tag@v1
+      id: upstream
+      with:
+        regex: ${{ matrix.versionRegex }}
+        repository: kubernetes/kubernetes
+    -
+      uses: dysnix/find-latest-tag@v1
+      id: latest
+      with:
+        compared-to-tag: ${{ steps.upstream.outputs.tag }}
+        regex: ${{ matrix.versionRegex }}
+        repository: ${{ github.repository }}
+    -
+      run: |
+        echo "equal: ${{ steps.latest.outputs.equal }}"
+        echo "newer: ${{ steps.latest.outputs.newer }}"
+        echo "older: ${{ steps.latest.outputs.older }}"
+
+    # - uses: ncipollo/release-action@v1
+    #   with:
+    #     body: |
+    #       new upstream release v1.16.15-r4
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+    #     tag: v1.16.15-r4

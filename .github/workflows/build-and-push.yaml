@@ -54,7 +54,7 @@ jobs:
         uses: dysnix/find-latest-tag@v1
         id: latestTag
         with:
-          compares-to-latest: ${{ github.ref }}
+          compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
       -
         name: Docker meta
