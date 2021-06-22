@@ -6,12 +6,13 @@ COPY .versions /
 RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
   . /.versions && \
   ## Install kubectl of a given version \
+  ## Note: no checksum check since kubectl version is dynamic \
     ( cd /usr/local/bin && curl --retry 3 -sSLO \
         "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
       chmod 755 kubectl ) && \
   ## Install helm \
     ( cd /tmp && file="helm-${HELM_VERSION}-linux-amd64.tar.gz" && curl -sSLO https://get.helm.sh/$file && \
-       printf "${HELM_SHA}  ${file}" && tar zxf ${file} && mv linux-amd64/helm /usr/local/bin/ ) && \
+      printf "${HELM_SHA}  ${file}" | sha256sum - && tar zxf ${file} && mv linux-amd64/helm /usr/local/bin/ ) && \
   ## Install helmfile \
     ( cd /usr/local/bin && curl --retry 3 -sSLo helmfile \
         "https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_linux_amd64" && \
@@ -39,8 +40,9 @@ WORKDIR /dysnix/kubectl
 RUN helm plugin install https://github.com/databus23/helm-diff && \
     helm plugin install https://github.com/futuresimple/helm-secrets && \
     helm plugin install https://github.com/hypnoglow/helm-s3.git && \
-    helm plugin install https://github.com/aslafy-z/helm-git.git
+    helm plugin install https://github.com/aslafy-z/helm-git.git && \
+    helm plugin install https://github.com/hayorov/helm-gcs.git
 
-# follow DL4006
+# follow DL4006 (hadolint)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 CMD ["/usr/local/bin/kubectl"]
