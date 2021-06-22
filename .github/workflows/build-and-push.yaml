@@ -15,14 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.set.outputs.image }}
-      kubectlVersion: ${{ steps.version.output}}
+      kubectlVersion: ${{ steps.post.outputs.kubectlVersion }}
     steps:
       - id: set
         run: |
           # Computed org/repo name, docker- prefix is stripped off
           export DEFAULT_IMAGE=$(echo -n '${{ github.event.organization.login }}/'; echo '${{ github.event.repository.name }}' | sed 's/^docker-//' | tr '[:upper:]' '[:lower:]')
           echo "::set-output name=image::${SET_NAME:-$DEFAULT_IMAGE}"
-      - id: version
+      - id: post
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           # Computed version (pick tag's stripped semver, i.e. only vX.Y.Z)
@@ -56,6 +56,12 @@ jobs:
         with:
           compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
+      - id: set
+        if: steps.latestTag.outputs.older == 'false'
+        env:
+          minorTags: type=semver,pattern=v{{major}}.{{minor}}
+        run: |
+          echo "::set-output name=minorTags::${{ env.minorTags }}"
       -
         name: Docker meta
         id: meta
@@ -67,7 +73,7 @@ jobs:
             suffix=${{ matrix.suffix }}
           tags: |
             type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}.{{minor}}
+            ${{ needs.pre.outputs.minorTags }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
