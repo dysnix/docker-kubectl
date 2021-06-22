@@ -56,7 +56,8 @@ jobs:
         with:
           compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
-      - id: set
+      -
+        id: set
         if: steps.latestTag.outputs.older == 'false'
         env:
           minorTags: type=semver,pattern=v{{major}}.{{minor}}
@@ -73,7 +74,7 @@ jobs:
             suffix=${{ matrix.suffix }}
           tags: |
             type=semver,pattern=v{{version}}
-            ${{ needs.pre.outputs.minorTags }}
+            ${{ steps.set.outputs.minorTags }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
