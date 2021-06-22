@@ -1,9 +1,8 @@
-name: Publish latest
+name: Publish new releases
 
 on: 
-  push:
-    branches:
-    - '**'
+  schedule:
+    - cron: "*/10 * * * *"
 
 jobs:
   publish:
@@ -34,14 +33,11 @@ jobs:
         regex: ${{ matrix.versionRegex }}
         repository: ${{ github.repository }}
     -
-      run: |
-        echo "equal: ${{ steps.latest.outputs.equal }}"
-        echo "newer: ${{ steps.latest.outputs.newer }}"
-        echo "older: ${{ steps.latest.outputs.older }}"
-
-    # - uses: ncipollo/release-action@v1
-    #   with:
-    #     body: |
-    #       new upstream release v1.16.15-r4
-    #     token: ${{ secrets.GITHUB_TOKEN }}
-    #     tag: v1.16.15-r4
+      name: Publish new release
+      uses: ncipollo/release-action@v1
+      if: steps.latest.outputs.newer == 'true' || steps.latest.outputs.tag == ''
+      with:
+        body: |
+          new upstream release ${{ steps.upstream.outputs.tag }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ steps.upstream.outputs.tag }}
