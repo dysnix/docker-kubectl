@@ -16,6 +16,7 @@ jobs:
     outputs:
       image: ${{ steps.set.outputs.image }}
       kubectlVersion: ${{ steps.post.outputs.kubectlVersion }}
+      minorVersion: ${{ steps.post.outputs.minorVersion }}
     steps:
       - id: set
         run: |
@@ -28,6 +29,7 @@ jobs:
           # Computed version (pick tag's stripped semver, i.e. only vX.Y.Z)
           KUBECTL_VERSION=$(echo '${{ github.ref }}' | sed -E -e 's/refs\/tags\///' -e 's/(v[0-9]+.[0-9]+.[0-9]+).*/\1/')
           echo "::set-output name=kubectlVersion::$KUBECTL_VERSION"
+          echo "::set-output name=minorVersion::${KUBECTL_VERSION%.*}"
 
   build:
     name: Build Docker Image
@@ -52,23 +54,30 @@ jobs:
       - uses: actions/checkout@v2
       -
         uses: dysnix/find-latest-tag@v1
-        id: latestTag
+        id: findLatest
         with:
           compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
       -
-        ## Calculation is run when we release the "latest" image.
-        ## For this image we add v{{major}}.{{minor}} and {{ matrix.flavor }} tags.
+        uses: dysnix/find-latest-tag@v1
+        id: findLatestMinor
+        with:
+          regex: ${{ needs.pre.outputs.minorVersion }}
+          compared-to-tag: ${{ github.ref }}
+          repository: ${{ github.repository }}
+      -
         id: set
-        if: steps.latestTag.outputs.older == 'false'
         env:
-          minorSemverTag: type=semver,pattern=v{{major}}.{{minor}}
-          flavorTag: type=raw,value=${{ matrix.flavor }},suffix=
+          minorTag: type=semver,pattern=v{{major}}.{{minor}}
+          flavorTag: type=raw,value=${{ matrix.flavor}},suffix=
         run: |
-          echo "::set-output name=minorSemverTag::${{ env.minorSemverTag }}"
+          ## We release the latest amongst minors
+          if [ "${{ steps.findLatestMinor.outputs.older }}" = 'false' ]; then
+            echo "::set-output name=minorTag::${{ env.minorTag }}"
+          fi
 
-          ## Properly treat tags for the "latest" images
-          if [ "${{ matrix.flavor }}" != "default" ]; then
+          ## The latest release is tagged with flavor
+          if [ "${{ steps.findLatest.outputs.older }}" = 'false' -a "${{ matrix.flavor }}" != 'default' ]; then
             echo "::set-output name=flavorTag::${{ env.flavorTag }}"
           fi
       -
@@ -78,11 +87,11 @@ jobs:
         with:
           images: ${{ needs.pre.outputs.image }}
           flavor: |
-            latest=${{ steps.latestTag.outputs.older == 'false' && matrix.flavor == 'default' }}
+            latest=${{ steps.findLatest.outputs.older == 'false' && matrix.flavor == 'default' }}
             suffix=${{ matrix.suffix }}
           tags: |
             type=semver,pattern=v{{version}}
-            ${{ steps.set.outputs.minorSemverTag }}
+            ${{ steps.set.outputs.minorTag }}
             ${{ steps.set.outputs.flavorTag }}
       -
         name: Set up Docker Buildx
