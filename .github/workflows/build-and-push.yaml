@@ -63,6 +63,7 @@ jobs:
           minorTags: type=semver,pattern=v{{major}}.{{minor}}
         run: |
           echo "::set-output name=minorTags::${{ env.minorTags }}"
+      - uses: hmarr/debug-action@v2
       -
         name: Docker meta
         id: meta
