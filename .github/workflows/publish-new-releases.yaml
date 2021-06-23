@@ -2,7 +2,7 @@
 name: Publish new releases
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '4 */4 * * *'
 
 jobs:
   publish:
@@ -39,5 +39,5 @@ jobs:
       with:
         body: |
           new upstream release ${{ steps.upstream.outputs.tag }}
-        token: ${{ secrets.GH_PAT }}
+        token: ${{ secrets.GH_DYSNIX_BOT_TOKEN }}
         tag: ${{ steps.upstream.outputs.tag }}
