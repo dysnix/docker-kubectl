@@ -57,13 +57,20 @@ jobs:
           compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
       -
+        ## Calculation is run when we release the "latest" image.
+        ## For this image we add v{{major}}.{{minor}} and {{ matrix.flavor }} tags.
         id: set
         if: steps.latestTag.outputs.older == 'false'
         env:
-          minorTags: type=semver,pattern=v{{major}}.{{minor}}
+          minorSemverTag: type=semver,pattern=v{{major}}.{{minor}}
+          flavorTag: type=raw,value=${{ matrix.flavor }},suffix=
         run: |
-          echo "::set-output name=minorTags::${{ env.minorTags }}"
-      - uses: hmarr/debug-action@v2
+          echo "::set-output name=minorSemverTag::${{ env.minorSemverTag }}"
+
+          ## Properly treat tags for the "latest" images
+          if [ "${{ matrix.flavor }}" != "default" ]; then
+            echo "::set-output name=flavorTag::${{ env.flavorTag }}"
+          fi
       -
         name: Docker meta
         id: meta
@@ -71,11 +78,12 @@ jobs:
         with:
           images: ${{ needs.pre.outputs.image }}
           flavor: |
-            latest=${{ steps.latestTag.outputs.older == 'false' }}
+            latest=${{ steps.latestTag.outputs.older == 'false' && matrix.flavor == 'default' }}
             suffix=${{ matrix.suffix }}
           tags: |
             type=semver,pattern=v{{version}}
-            ${{ steps.set.outputs.minorTags }}
+            ${{ steps.set.outputs.minorSemverTag }}
+            ${{ steps.set.outputs.flavorTag }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
