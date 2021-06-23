@@ -39,5 +39,5 @@ jobs:
       with:
         body: |
           new upstream release ${{ steps.upstream.outputs.tag }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GH_PAT }}
         tag: ${{ steps.upstream.outputs.tag }}
