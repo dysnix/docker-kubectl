@@ -28,6 +28,12 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
   ## Cleanup
     rm -rf /tmp/*
 
+## Extend profile.d for "in-docker" github-actions (container's environment variables are obscured)
+RUN \
+  if [ -d "/google-cloud-sdk/bin" ]; then \
+    echo "PATH=/google-cloud-sdk/bin:\$PATH" >> /etc/profile.d/google-cloud-sdk.sh; \
+  fi
+
 ARG USER=kubectl
 RUN if [ "${USER:-kubectl}" = "kubectl" ]; then \
       mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
@@ -44,5 +50,5 @@ RUN helm plugin install https://github.com/databus23/helm-diff && \
     helm plugin install https://github.com/hayorov/helm-gcs.git
 
 # follow DL4006 (hadolint)
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-lo", "pipefail", "-c"]
 CMD ["/usr/local/bin/kubectl"]
