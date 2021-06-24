@@ -29,11 +29,11 @@ RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
     rm -rf /tmp/*
 
 ARG USER=kubectl
-RUN if [ "${USER}" = "kubectl" ]; then \
+RUN if [ "${USER:-kubectl}" = "kubectl" ]; then \
       mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
     fi
 
-USER ${USER}
+USER ${USER:-kubectl}
 WORKDIR /dysnix/kubectl
 
 ## Install plugins (already as the specified user)
