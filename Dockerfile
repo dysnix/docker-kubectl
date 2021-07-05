@@ -1,9 +1,9 @@
 ARG FLAVOR_IMAGE
 FROM ${FLAVOR_IMAGE}
-ARG KUBECTL_VERSION=v1.21.1
+ARG KUBECTL_VERSION=v1.21.2
 
 COPY .versions /
-RUN apk add --no-cache ca-certificates git bash curl jq sed coreutils tar && \
+RUN apk add --no-cache ca-certificates git bash curl wget jq sed coreutils tar sudo && \
   . /.versions && \
   ## Install kubectl of a given version \
   ## Note: no checksum check since kubectl version is dynamic \
@@ -34,12 +34,11 @@ RUN \
     echo "PATH=/google-cloud-sdk/bin:\$PATH" >> /etc/profile.d/google-cloud-sdk.sh; \
   fi
 
-ARG USER=kubectl
-RUN if [ "${USER:-kubectl}" = "kubectl" ]; then \
-      mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
-    fi
+RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
+    # make the runner user a passwordless sudoer \
+    echo "kubectl ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/kubectl && chmod 440 /etc/sudoers.d/kubectl
 
-USER ${USER:-kubectl}
+USER kubectl
 WORKDIR /dysnix/kubectl
 
 ## Install plugins (already as the specified user)
@@ -52,3 +51,5 @@ RUN helm plugin install https://github.com/databus23/helm-diff && \
 # follow DL4006 (hadolint)
 SHELL ["/bin/bash", "-lo", "pipefail", "-c"]
 CMD ["/usr/local/bin/kubectl"]
+
+ONBUILD USER root

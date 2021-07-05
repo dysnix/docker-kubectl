@@ -38,14 +38,10 @@ jobs:
 
     strategy:
       matrix:
-        flavor: [default, gcloud, root]
+        flavor: [default, gcloud]
         include:
           - flavor: default
             image: alpine
-          - flavor: root
-            image: alpine
-            user: root
-            suffix: -root
           - flavor: gcloud
             image: google/cloud-sdk:alpine
             suffix: -gcloud
@@ -66,20 +62,23 @@ jobs:
           compared-to-tag: ${{ github.ref }}
           repository: ${{ github.repository }}
       -
+        uses: actions/github-script@v4
         id: set
-        env:
-          minorTag: type=semver,pattern=v{{major}}.{{minor}}
-          flavorTag: type=raw,value=${{ matrix.flavor}},suffix=
-        run: |
-          ## We release the latest amongst minors
-          if [ "${{ steps.findLatestMinor.outputs.older }}" = 'false' ]; then
-            echo "::set-output name=minorTag::${{ env.minorTag }}"
-          fi
+        with:
+          script: |
+            if ( '${{ steps.findLatest.outputs.older }}' === 'false' ) {
+              // Specify latest or flavor
+              core.setOutput('latestFlavor',
+                '${{ matrix.flavor }}' !== 'default' ? '${{ matrix.flavor }}' : 'latest'
+              );
 
-          ## The latest release is tagged with flavor
-          if [ "${{ steps.findLatest.outputs.older }}" = 'false' -a "${{ matrix.flavor }}" != 'default' ]; then
-            echo "::set-output name=flavorTag::${{ env.flavorTag }}"
-          fi
+              // Split tag into semver and release id v1.2.3-r1 => v1.2.3 and -r1
+              const match = context.ref.match(/^refs\/tags\/(.*)(-r\d+)$/);
+              if (match) {
+                core.setOutput('semver', match[1]);
+                core.setOutput('rid', match[2]);
+              }
+            }
       -
         name: Docker meta
         id: meta
@@ -87,12 +86,13 @@ jobs:
         with:
           images: ${{ needs.pre.outputs.image }}
           flavor: |
-            latest=${{ steps.findLatest.outputs.older == 'false' && matrix.flavor == 'default' }}
+            latest=false
             suffix=${{ matrix.suffix }}
           tags: |
-            type=semver,pattern=v{{version}}
-            ${{ steps.set.outputs.minorTag }}
-            ${{ steps.set.outputs.flavorTag }}
+            type=semver,pattern=v{{version}},value=${{ steps.set.outputs.semver }}
+            type=semver,pattern=v{{version}},value=${{ steps.set.outputs.semver }},suffix=${{ matrix.suffix }}${{ steps.set.outputs.rid }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ steps.set.outputs.semver }},suffix=${{ matrix.suffix }},enable=${{ steps.findLatestMinor.outputs.older == 'false' }}
+            type=raw,value=${{ steps.set.outputs.latestFlavor }},suffix=
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
