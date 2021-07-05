@@ -66,18 +66,17 @@ jobs:
         id: set
         with:
           script: |
+            // Split tag into semver and release id v1.2.3-r1 => v1.2.3 and -r1
+            const match = context.ref.match(/^refs\/tags\/(.*)(-r\d+)$/);
+            if (match) {
+              core.setOutput('semver', match[1]);
+              core.setOutput('rid', match[2]);
+            }
+            // Specify latest or flavor
             if ( '${{ steps.findLatest.outputs.older }}' === 'false' ) {
-              // Specify latest or flavor
               core.setOutput('latestFlavor',
                 '${{ matrix.flavor }}' !== 'default' ? '${{ matrix.flavor }}' : 'latest'
               );
-
-              // Split tag into semver and release id v1.2.3-r1 => v1.2.3 and -r1
-              const match = context.ref.match(/^refs\/tags\/(.*)(-r\d+)$/);
-              if (match) {
-                core.setOutput('semver', match[1]);
-                core.setOutput('rid', match[2]);
-              }
             }
       -
         name: Docker meta
