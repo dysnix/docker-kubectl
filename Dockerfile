@@ -25,8 +25,11 @@ RUN apk add --no-cache ca-certificates git bash curl wget jq sed coreutils tar s
     ( cd /usr/local/bin && curl -sSLo yq \
         "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" && \
       printf "${YQ_SHA}  yq" | sha256sum -c && chmod 755 yq ) && \
-  ## Cleanup
-    rm -rf /tmp/*
+  ## Install gosu \
+    ( cd /usr/sbin && curl -sSLo gosu \
+        "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" && \
+      printf "${GOSU_SHA}  gosu" | sha256sum -c && chmod 755 gosu ) && \
+    rm -rf /tmp/* /var/cache/apk
 
 ## Extend profile.d for "in-docker" github-actions (container's environment variables are obscured)
 RUN \
@@ -38,18 +41,17 @@ RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
     # make the runner user a passwordless sudoer \
     echo "kubectl ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/kubectl && chmod 440 /etc/sudoers.d/kubectl
 
-USER kubectl
-WORKDIR /dysnix/kubectl
-
 ## Install plugins (already as the specified user)
-RUN helm plugin install https://github.com/databus23/helm-diff && \
-    helm plugin install https://github.com/futuresimple/helm-secrets && \
-    helm plugin install https://github.com/hypnoglow/helm-s3.git && \
-    helm plugin install https://github.com/aslafy-z/helm-git.git && \
-    helm plugin install https://github.com/hayorov/helm-gcs.git
+RUN sudo -iu kubectl bash -c '\
+      helm plugin install https://github.com/databus23/helm-diff && \
+      helm plugin install https://github.com/futuresimple/helm-secrets && \
+      helm plugin install https://github.com/hypnoglow/helm-s3.git && \
+      helm plugin install https://github.com/aslafy-z/helm-git.git && \
+      helm plugin install https://github.com/hayorov/helm-gcs.git'
+
+WORKDIR /dysnix/kubectl
 
 # follow DL4006 (hadolint)
 SHELL ["/bin/bash", "-lo", "pipefail", "-c"]
 CMD ["/usr/local/bin/kubectl"]
-
-ONBUILD USER root
+ENTRYPOINT [ "/usr/sbin/gosu", "kubectl" ]
