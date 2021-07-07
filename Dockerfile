@@ -2,6 +2,9 @@ ARG FLAVOR_IMAGE
 FROM ${FLAVOR_IMAGE}
 ARG KUBECTL_VERSION=v1.21.2
 
+# follow DL4006 (hadolint)
+SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+
 COPY .versions /
 RUN apk add --no-cache ca-certificates git bash curl wget jq sed coreutils tar sudo && \
   . /.versions && \
@@ -25,10 +28,6 @@ RUN apk add --no-cache ca-certificates git bash curl wget jq sed coreutils tar s
     ( cd /usr/local/bin && curl -sSLo yq \
         "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" && \
       printf "${YQ_SHA}  yq" | sha256sum -c && chmod 755 yq ) && \
-  ## Install gosu \
-    ( cd /usr/sbin && curl -sSLo gosu \
-        "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" && \
-      printf "${GOSU_SHA}  gosu" | sha256sum -c && chmod 755 gosu ) && \
     rm -rf /tmp/* /var/cache/apk
 
 ## Extend profile.d for "in-docker" github-actions (container's environment variables are obscured)
@@ -51,7 +50,13 @@ RUN sudo -iu kubectl bash -c '\
 
 WORKDIR /dysnix/kubectl
 
-# follow DL4006 (hadolint)
-SHELL ["/bin/bash", "-lo", "pipefail", "-c"]
 CMD ["/usr/local/bin/kubectl"]
-ENTRYPOINT [ "/usr/sbin/gosu", "kubectl" ]
+SHELL ["/bin/bash", "-lo", "pipefail", "-c"]
+
+# During CI runs (ex. github) no entrypoint is available, USER is the only way to drop privileges.
+USER kubectl
+
+# Explicitly define the environment (for possible HOME override)
+ENV \
+  HELM_CACHE_HOME=/dysnix/kubectl/.cache/helm \
+  HELM_DATA_HOME=/dysnix/kubectl/.local/share/helm
