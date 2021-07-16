@@ -2,7 +2,7 @@
 name: Publish new releases
 on:
   schedule:
-    - cron: '25 * * * *'
+    - cron: '*/15 * * * *'
 
 jobs:
   publish:
