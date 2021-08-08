@@ -25,7 +25,7 @@ jobs:
       minor_version: ${{ steps.kubever.outputs.minorversion }}
       ## Note!: prerelease (-r\d+) is used as the release id
       release_id: ${{ steps.kubever.outputs.prerelease }}
-      push: ${{ steps.kubever.outputs.failed == 'false' }}
+      push: ${{ steps.kubever.outputs.failed != 'false' }}
     steps:
       -
         uses: actions/github-script@v4
@@ -94,7 +94,7 @@ jobs:
           ## !!!!NOTE: force-push of v1.2.3-r* tags with lower release id overwrites v1.2.3 image!
           tags: |
             type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.version }}
-            type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.version }},suffix=${{ matrix.suffix }}-${{ needs.setup.outputs.release_id }}
+            type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.version }},suffix=${{ matrix.suffix }}-${{ needs.setup.outputs.release_id }},enable=${{ needs.setup.outputs.release_id != '' }}
             type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.setup.outputs.version }},enable=${{ steps.findMinor.outputs.older == 'false' }}
             type=raw,value=${{ steps.set.outputs.latestValue }},suffix=
       -
@@ -118,7 +118,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: ${{ needs.pre.outputs.kubectlVersion != '' }}
+          push: ${{ needs.setup.outputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
