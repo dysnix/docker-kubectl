@@ -95,7 +95,7 @@ jobs:
           tags: |
             type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.version }}
             type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.version }},suffix=${{ matrix.suffix }}-${{ needs.setup.outputs.release_id }},enable=${{ needs.setup.outputs.release_id != '' }}
-            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.setup.outputs.version }},enable=${{ steps.findMinor.outputs.older == 'false' }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.setup.outputs.version }},enable=${{ steps.latestMinor.outputs.older == 'false' }}
             type=raw,value=${{ steps.set.outputs.latestValue }},suffix=
       -
         name: Set up Docker Buildx
