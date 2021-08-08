@@ -15,6 +15,6 @@ jobs:
           workflow: Build and Push Image
           token: ${{ secrets.GH_DYSNIX_BOT_TOKEN }}
           wait-for-completion-timeout: 10m
-          wait-for-completion-interval: 1m
+          wait-for-completion-interval: 30s
           inputs: |
             {"version": "${{ github.ref }}"}
