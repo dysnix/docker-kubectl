@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.set.outputs.image }}
-      kubeVer: ${{ steps.post.outputs.kubeVer }}
-      kubeTag: v${{ steps.post.outputs.kubeVer }}
+      kubeVer: ${{ steps.kubever.outputs.patchversion }}
+      kubeTag: v${{ steps.kubever.outputs.patchversion }}
       kubeMinor: ${{ steps.kubever.outputs.minor }}
-
+      push: ${{ steps.kubever.outputs.failed != 'true' }}
     steps:
       -
         uses: actions/github-script@v4
@@ -37,20 +37,15 @@ jobs:
               '${{ env.DOCKER_IMAGE }}' :
               `${{ github.event.organization.login }}/${ repo }`
             )
-            // push is set to true when pushes are enabled
-            core.setOutput('push', versionRegex.test('${{ github.event.inputs.version }}'))
       -
         name: Kubectl Version
         id: kubever
-        if: steps.set.outputs.push == 'true'
-        uses: booxmedialtd/ws-action-parse-semver@v1
+        uses: dysnix/ws-action-parse-semver@upgrade
         with:
-          input_string: '${{ github.event.inputs.version }}'
-          version_extractor_regex: '${{ env.VERSION_REGEX }}'
-      -
-        uses: actions/github-script@v4
-        id: post
-        if: steps.set.outputs.push == 'true'
-        with:
-          script: |
-            core.setOutput('kubeVer', '${{ steps.kubever.outputs.major }}.${{ steps.kubever.outputs.minor }}.${{ steps.kubever.outputs.patch }}')
+          string: '${{ github.event.inputs.version }}'
+          extractor_regex: '${{ env.VERSION_REGEX }}'
+          extractor_group: 2
+      - name: Ouptuts
+        run: |
+          echo '${{ toJSON(steps.kubever.outputs) }}'
+
