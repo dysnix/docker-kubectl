@@ -1,0 +1,20 @@
+name: Dispatch Build
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  deploy:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aurelien-baudet/workflow-dispatch@v2
+        with:
+          workflow: Build and Push Image
+          token: ${{ secrets.GH_DYSNIX_BOT_TOKEN }}
+          wait-for-completion-timeout: 10m
+          wait-for-completion-interval: 30s
+          inputs: |
+            {"version": "${{ github.ref }}"}

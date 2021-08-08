@@ -2,7 +2,7 @@
 name: Publish new releases
 on:
   schedule:
-    - cron: '7 */6 * * *'
+    - cron: '*/10 * * * *'
 
 jobs:
   publish:
@@ -12,33 +12,42 @@ jobs:
     strategy:
       matrix:
         versionRegex:
-         - v1\.18\.[0-9]+$
          - v1\.19\.[0-9]+$
          - v1\.20\.[0-9]+$
          - v1\.21\.[0-9]+$
 
     steps:
-    - uses: actions/checkout@v2
-    -
-      uses: dysnix/find-latest-tag@v1
-      id: upstream
-      with:
-        regex: ${{ matrix.versionRegex }}
-        repository: kubernetes/kubernetes
-    -
-      uses: dysnix/find-latest-tag@v1
-      id: latest
-      with:
-        compared-to-tag: ${{ steps.upstream.outputs.tag }}
-        regex: ${{ matrix.versionRegex }}
-        repository: ${{ github.repository }}
-    -
-      name: Publish new release
-      uses: ncipollo/release-action@v1
-      if: steps.latest.outputs.newer == 'true' || steps.latest.outputs.tag == ''
-      with:
-        body: |
-          new upstream release ${{ steps.upstream.outputs.tag }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ steps.upstream.outputs.tag }}
-        commit: master
+      - uses: actions/checkout@v2
+      -
+        uses: dysnix/find-latest-tag@v1
+        id: upstream
+        with:
+          regex: ${{ matrix.versionRegex }}
+          repository: kubernetes/kubernetes
+      -
+        uses: dysnix/find-latest-tag@v1
+        id: latest
+        with:
+          compared-to-tag: ${{ steps.upstream.outputs.tag }}
+          regex: ${{ matrix.versionRegex }}
+          repository: ${{ github.repository }}
+      -
+        if: steps.latest.outputs.newer == 'true' || steps.latest.outputs.tag == ''
+        uses: aurelien-baudet/workflow-dispatch@v2
+        with:
+          workflow: Build and Push Image
+          token: ${{ secrets.GH_DYSNIX_BOT_TOKEN }}
+          wait-for-completion-timeout: 10m
+          wait-for-completion-interval: 30s
+          inputs: |
+            {"version": "${{ steps.upstream.outputs.tag }}"}
+      -
+        name: Publish new release
+        uses: ncipollo/release-action@v1
+        if: steps.latest.outputs.newer == 'true' || steps.latest.outputs.tag == ''
+        with:
+          body: |
+            new upstream release ${{ steps.upstream.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.upstream.outputs.tag }}
+          commit: master
