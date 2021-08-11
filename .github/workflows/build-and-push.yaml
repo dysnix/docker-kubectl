@@ -62,12 +62,14 @@ jobs:
       - uses: actions/checkout@v2
       -
         uses: dysnix/find-latest-tag@v1
+        if: ${{ needs.setup.outputs.release_tag != '' }}
         id: latest
         with:
           compared-to-tag: ${{ needs.setup.outputs.release_tag }}
           repository: ${{ github.repository }}
       -
         uses: dysnix/find-latest-tag@v1
+        if: ${{ needs.setup.outputs.release_tag != '' }}
         id: latestMinor
         with:
           regex: ${{ needs.setup.outputs.minor_version }}
