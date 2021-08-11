@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.set.outputs.image }}
-      tag: v${{ steps.kubever.outputs.fullversion }}
       version: ${{ steps.kubever.outputs.version }}
+      release_tag: v${{ steps.kubever.outputs.fullversion }}
       minor_version: ${{ steps.kubever.outputs.minorversion }}
       ## Note!: prerelease (-r\d+) is used as the release id
       release_id: ${{ steps.kubever.outputs.prerelease }}
@@ -64,14 +64,14 @@ jobs:
         uses: dysnix/find-latest-tag@v1
         id: latest
         with:
-          compared-to-tag: ${{ needs.setup.outputs.tag }}
+          compared-to-tag: ${{ needs.setup.outputs.release_tag }}
           repository: ${{ github.repository }}
       -
         uses: dysnix/find-latest-tag@v1
         id: latestMinor
         with:
           regex: ${{ needs.setup.outputs.minor_version }}
-          compared-to-tag: ${{ needs.setup.outputs.tag }}
+          compared-to-tag: ${{ needs.setup.outputs.release_tag }}
           repository: ${{ github.repository }}
       -
         uses: actions/github-script@v4
@@ -124,7 +124,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
-            KUBECTL_VERSION=${{ needs.setup.outputs.version }}
+            KUBECTL_VERSION=v${{ needs.setup.outputs.version }}
             FLAVOR_IMAGE=${{ matrix.image }}
       -
         # Temp fix
