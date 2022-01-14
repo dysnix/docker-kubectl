@@ -12,9 +12,9 @@ jobs:
     strategy:
       matrix:
         versionRegex:
-         - v1\.19\.[0-9]+$
          - v1\.20\.[0-9]+$
          - v1\.21\.[0-9]+$
+         - v1\.23\.[0-9]+$
 
     steps:
       - uses: actions/checkout@v2
