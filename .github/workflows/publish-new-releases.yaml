@@ -1,8 +1,9 @@
 ---
 name: Publish new releases
 on:
-  schedule:
-    - cron: '7 */6 * * *'
+  push:
+#  schedule:
+#    - cron: '7 */6 * * *'
 
 jobs:
   publish:
