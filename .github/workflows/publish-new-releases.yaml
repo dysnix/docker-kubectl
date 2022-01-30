@@ -1,8 +1,10 @@
 ---
 name: Publish new releases
 on:
-  schedule:
-    - cron: '7 */6 * * *'
+  repository_dispatch:
+    type: [jdafj]
+#   schedule:
+#     - cron: '7 */6 * * *'
 
 jobs:
   publish:
