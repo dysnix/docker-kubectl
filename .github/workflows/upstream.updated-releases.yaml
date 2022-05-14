@@ -1,0 +1,67 @@
+name: Updated upstream releases
+## Finds release tags newer (uses semver) than available
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'Version regex (ex: v1\.20\.[0-9]+)'
+        required: true
+        type: string
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.sc.outputs.result }}
+
+    steps:
+      - uses: actions/github-script@v6
+        id: sc
+        with:
+          ## Normalize, remove newlines and escape
+          result-encoding: string
+          script: return String.raw`${{ inputs.versions }}`.replace(/\n\s*?([^\s])/gm, "$1").replace(/\\/g, '\\\\')
+
+  updated:
+    name: Releases
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version-regex: ${{ fromJSON(needs.setup.outputs.versions) }}
+    steps:
+      -
+        uses: dysnix/find-latest-tag@v2
+        id: newest-upstream
+        with:
+          regex: ${{ matrix.version-regex }}
+          repository: kubernetes/kubernetes
+      -
+        uses: dysnix/find-latest-tag@v2
+        id: newest-local
+        with:
+          compare-to: ${{ steps.newest-upstream.outputs.tag }}
+          regex: ${{ matrix.version-regex }}
+          repository: ${{ github.repository }}
+      -
+        id: result
+        shell: sh
+        run: |
+          if [ "${{ steps.newest-local.outputs.older == 'true' || steps.newest-local.outputs.tag == '' }}" = "true" ]; then
+            echo "New upstream release tag: ${{ steps.newest-upstream.outputs.tag }}"
+            echo "::set-output name=version::${{ steps.newest-upstream.outputs.tag }}"
+          fi
+      -
+        uses: actions/checkout@v2
+      -
+        name: Publish new release
+        uses: ncipollo/release-action@v1
+        if: steps.result.outputs.version != ''
+        with:
+          body: |
+            Release ${{ steps.result.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.result.outputs.version }}
+          commit: main
