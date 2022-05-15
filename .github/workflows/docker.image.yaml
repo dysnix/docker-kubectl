@@ -60,8 +60,10 @@ jobs:
         with:
           script: |
             let minor='^v${{ steps.kubever.outputs.version }}'.split('.', 2).join('\\.') + '\\.[0-9]+'
-            core.setOutput('kubeversion', 'v${{ steps.kubever.outputs.version }}')
             core.setOutput('minor-regex', minor)
+            if ('${{ steps.kubever.outputs.failed }}' == 'false') {
+              core.setOutput('kubeversion', 'v${{ steps.kubever.outputs.version }}')
+            }
       -
         name: version failure
         if: inputs.version != '' && steps.kubever.outputs.failed == 'true'
