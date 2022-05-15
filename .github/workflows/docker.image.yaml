@@ -61,7 +61,8 @@ jobs:
           script: |
             let minor='^v${{ steps.kubever.outputs.version }}'.split('.', 2).join('\\.') + '\\.[0-9]+'
             core.setOutput('minor-regex', minor)
-            if ('${{ steps.kubever.outputs.failed }}' == 'false') {
+            // note that failed can be ''
+            if ('${{ steps.kubever.outputs.failed }}' != 'true') {
               core.setOutput('kubeversion', 'v${{ steps.kubever.outputs.version }}')
             }
       -
@@ -168,7 +169,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            let published = "${{ steps.build.outcome == 'success' && inputs.push }}"
+            let published = "${{ steps.build.outcome == 'success' && needs.setup.outputs.push == 'true' }}"
             core.setOutput('published', published)
             core.info(`🏁 published == ${published}`)
             core.info(`🏁 latest tag: ${{ steps.latest-tag.outputs.value }}`)
