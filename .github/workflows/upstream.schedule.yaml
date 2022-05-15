@@ -1,10 +1,10 @@
 ---
 name: Get updated releases
 on:
-  repository_dispatch:
-    types: [effectively-disabled]
-  # schedule:
-  #   - cron: '*/5 * * * *'
+  # repository_dispatch:
+  #   types: [effectively-disabled]
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   updated:

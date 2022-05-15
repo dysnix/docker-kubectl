@@ -100,7 +100,7 @@ jobs:
           repository: ${{ github.repository }}
       -
         id: latest-tag
-        if: steps.newest-v.outputs.older == 'true' || steps.newest-v.outputs.tag == ''
+        if: steps.newest-v.outputs.equal == 'true' || steps.newest-v.outputs.tag == ''
         run: |
           latest="${{ matrix.flavor }}"; latest="${latest#default}"
           echo "latest tag: ${latest:-latest}"
@@ -117,7 +117,7 @@ jobs:
           tags: |
             type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.kubeversion }}
             type=semver,pattern=v{{version}},value=${{ needs.setup.outputs.kubeversion }},suffix=${{ matrix.suffix }}-${{ needs.setup.outputs.rid }},enable=${{ needs.setup.outputs.rid != '' }}
-            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.setup.outputs.kubeversion }},enable=${{ steps.newest-mv.outputs.older == 'true' || steps.newest-mv.outputs.tag == '' }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.setup.outputs.kubeversion }},enable=${{ steps.newest-mv.outputs.equal == 'true' || steps.newest-mv.outputs.tag == '' }}
             type=raw,value=${{ steps.latest-tag.outputs.value }},suffix=
             type=raw,value=stub-build,enable=${{ needs.setup.outputs.kubeversion == '' }}
       -
