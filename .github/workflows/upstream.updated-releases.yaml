@@ -62,6 +62,6 @@ jobs:
         with:
           body: |
             Release ${{ steps.result.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_DYSNIX_BOT_TOKEN }}
           tag: ${{ steps.result.outputs.version }}
           commit: main
