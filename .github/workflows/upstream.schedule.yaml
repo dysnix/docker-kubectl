@@ -3,8 +3,8 @@ name: Get updated releases
 on:
   repository_dispatch:
     types: [effectively-disabled]
-#   schedule:
-#     - cron: '7 */6 * * *'
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   updated:
@@ -14,9 +14,9 @@ jobs:
     with:
       versions: |-
         [
-          "v1\.20\.[0-9]+$",
-          "v1\.21\.[0-9]+$",
-          "v1\.22\.[0-9]+$",
-          "v1\.23\.[0-9]+$",
-          "v1\.24\.[0-9]+$"
+          "^v1\.20\.\d+$",
+          "^v1\.21\.\d+$",
+          "^v1\.22\.\d+$",
+          "^v1\.23\.\d+$",
+          "^v1\.24\.\d+$"
         ]

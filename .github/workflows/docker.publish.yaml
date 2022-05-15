@@ -1,0 +1,22 @@
+name: Publish Docker Image
+on:
+  release:
+    types: [published]
+
+jobs:
+  delay:
+    name: Delay execution
+    runs-on: ubuntu-latest
+    steps:
+      ## Easiset way to somehow parallel releases publish
+      - run: |
+          echo "Delay execution to absorb all tags"
+          sleep 180
+
+  publish:
+    name: Publish
+    needs: [delay]
+    uses: ./.github/workflows/docker.image.yaml
+    secrets: inherit
+    with:
+      version: ${{ github.event.release.tag_name }}
