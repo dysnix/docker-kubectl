@@ -32,6 +32,7 @@ jobs:
     outputs:
       image: ${{ steps.set.outputs.image }}
       kubeversion: ${{ steps.versions.outputs.kubeversion }}
+      cache-id: ${{ steps.versions.outputs.cache-id }}
       minor-regex: ${{ steps.versions.outputs.minor-regex }}
       rid: ${{ steps.kubever.outputs.prerelease }} # releases id (-r123)
       push: ${{ inputs.push && inputs.version != '' }}
@@ -59,12 +60,13 @@ jobs:
         if: inputs.version != ''
         with:
           script: |
-            let minor='^v${{ steps.kubever.outputs.version }}'.split('.', 2).join('\\.') + '\\.[0-9]+'
-            core.setOutput('minor-regex', minor)
+            let minorver='^v${{ steps.kubever.outputs.version }}'.split('.', 2).join('.')
             // note that failed can be ''
             if ('${{ steps.kubever.outputs.failed }}' != 'true') {
               core.setOutput('kubeversion', 'v${{ steps.kubever.outputs.version }}')
             }
+            core.setOutput('minor-regex', minorver.replace(/\./g, '\\.') + '\\.[0-9]+')
+            core.setOutput('cache-id', ${{ matrix.flavor }}-' + minorver)
       -
         name: version failure
         if: inputs.version != '' && steps.kubever.outputs.failed == 'true'
@@ -131,9 +133,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.flavor }}-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ needs.setup.outputs.cache-id }}-${{ github.sha }}
           restore-keys: |-
-            ${{ runner.os }}-buildx-${{ matrix.flavor }}-${{ github.event.before }}
+            ${{ runner.os }}-buildx-${{ needs.setup.outputs.cache-id }}-${{ github.event.before }}
       -
         uses: docker/login-action@v1
         with:
