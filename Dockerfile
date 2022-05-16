@@ -74,12 +74,12 @@ RUN . /.versions && \
     rm -rf /tmp/* /var/cache/apk
 
 ## Install plugins (already as the specified user)
-RUN sudo -iu kubectl bash -c 'set -e\
-      helm plugin install https://github.com/databus23/helm-diff \
-      helm plugin install https://github.com/futuresimple/helm-secrets \
-      helm plugin install https://github.com/hypnoglow/helm-s3.git \
-      helm plugin install https://github.com/aslafy-z/helm-git.git \
-      helm plugin install https://github.com/hayorov/helm-gcs.git \
+RUN sudo -iu kubectl bash -c 'set -e; \
+      helm plugin install https://github.com/databus23/helm-diff; \
+      helm plugin install https://github.com/futuresimple/helm-secrets; \
+      helm plugin install https://github.com/hypnoglow/helm-s3.git; \
+      helm plugin install https://github.com/aslafy-z/helm-git.git; \
+      helm plugin install https://github.com/hayorov/helm-gcs.git; \
     '
 
 ## Set cache and home for helme (useful for environments which override HOME)
