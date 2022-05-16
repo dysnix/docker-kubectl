@@ -60,12 +60,12 @@ jobs:
         if: inputs.version != ''
         with:
           script: |
-            let minorver='^v${{ steps.kubever.outputs.version }}'.split('.', 2).join('.')
+            let minorver='v${{ steps.kubever.outputs.version }}'.split('.', 2).join('.')
             // note that failed can be ''
             if ('${{ steps.kubever.outputs.failed }}' != 'true') {
               core.setOutput('kubeversion', 'v${{ steps.kubever.outputs.version }}')
             }
-            core.setOutput('minor-regex', minorver.replace(/\./g, '\\.') + '\\.[0-9]+')
+            core.setOutput('minor-regex', '^' + minorver.replace(/\./g, '\\.') + '\\.[0-9]+')
             core.setOutput('cache-id', ${{ matrix.flavor }}-' + minorver)
       -
         name: version failure
