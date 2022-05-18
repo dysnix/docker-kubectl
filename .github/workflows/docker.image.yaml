@@ -148,7 +148,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: ${{ inputs.push }}
+          push: ${{ needs.setup.outputs.push == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
