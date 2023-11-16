@@ -5,7 +5,7 @@ ARG KUBECTL_VERSION=v1.24.0
 # follow DL4006 (hadolint)
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
-ENV GOSU_VERSION 1.14
+ENV GOSU_VERSION 1.17
 RUN set -eux; \
 	\
 	apk add --no-cache --virtual .gosu-deps \
@@ -60,12 +60,12 @@ RUN . /.versions && \
     ( cd /tmp && file="helm-${HELM_VERSION}-linux-amd64.tar.gz" && curl -sSLO https://get.helm.sh/$file && \
       printf "${HELM_SHA}  ${file}" | sha256sum - && tar zxf ${file} && mv linux-amd64/helm /usr/local/bin/ ) && \
   ## Install helmfile \
-    ( cd /usr/local/bin && curl --retry 3 -sSLo helmfile \
-        "https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_linux_amd64" && \
-      printf "${HELMFILE_SHA}  helmfile" | sha256sum -c && chmod 755 helmfile ) && \
+    ( cd /tmp && file="helmfile_${HELMFILE_VERSION//v/}_linux_amd64.tar.gz" && curl --retry 3 -sSLO \
+        "https://github.com/helmfile/helmfile/releases/download/${HELMFILE_VERSION}/$file" && \
+      printf "${HELMFILE_SHA} ${file}" | sha256sum -c && tar zxf ${file} && mv helmfile /usr/local/bin/ ) && \
   ## Install sops \
     ( cd /usr/local/bin && curl -sSLo sops \
-        "https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux" && \
+        "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64" && \
       printf "${SOPS_SHA}  sops" | sha256sum -c && chmod 755 sops ) && \
   ## Install yq \
     ( cd /usr/local/bin && curl -sSLo yq \
@@ -76,7 +76,7 @@ RUN . /.versions && \
 ## Install plugins (already as the specified user)
 RUN sudo -iu kubectl bash -c 'set -e; \
       helm plugin install https://github.com/databus23/helm-diff; \
-      helm plugin install https://github.com/jkroepke/helm-secrets --version v3.12.0; \
+      helm plugin install https://github.com/jkroepke/helm-secrets; \
       helm plugin install https://github.com/hypnoglow/helm-s3.git; \
       helm plugin install https://github.com/aslafy-z/helm-git.git; \
       helm plugin install https://github.com/hayorov/helm-gcs.git; \
