@@ -46,7 +46,7 @@ RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
 ## Note: no checksum check since kubectl version is dynamic \
 RUN \
   ( cd /usr/local/bin && curl --retry 3 -sSLO \
-        "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+        "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
       chmod 755 kubectl ) && \
   # expose PATH via profile \
   if [ -d "/google-cloud-sdk/bin" ]; then \
