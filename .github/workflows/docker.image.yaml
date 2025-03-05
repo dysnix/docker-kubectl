@@ -113,7 +113,7 @@ jobs:
       -
         name: Docker meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ needs.setup.outputs.image }}
           flavor: |
@@ -127,10 +127,10 @@ jobs:
             type=raw,value=stub-build,enable=${{ needs.setup.outputs.kubeversion == '' }}
       -
         name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ needs.setup.outputs.cache-id }}-${{ github.sha }}
@@ -142,10 +142,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: ${{ needs.setup.outputs.push == 'true' }}
