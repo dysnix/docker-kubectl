@@ -1,6 +1,9 @@
 ARG FLAVOR_IMAGE
 FROM ${FLAVOR_IMAGE}
 ARG KUBECTL_VERSION=v1.24.0
+# auto-populated by buildkit
+ARG TARGETARCH
+ENV ARCH=${TARGETARCH:-amd64}
 
 # follow DL4006 (hadolint)
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
@@ -46,7 +49,7 @@ RUN mkdir /dysnix && adduser kubectl -u 1001 -D -h /dysnix/kubectl; \
 ## Note: no checksum check since kubectl version is dynamic \
 RUN \
   ( cd /usr/local/bin && curl --retry 3 -sSLO \
-        "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+        "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" && \
       chmod 755 kubectl ) && \
   # expose PATH via profile \
   if [ -d "/google-cloud-sdk/bin" ]; then \
@@ -54,22 +57,22 @@ RUN \
   fi
 
 ## Install tools
-COPY .versions /
+COPY .versions.${ARCH} /.versions
 RUN . /.versions && \
   ## Install helm \
-    ( cd /tmp && file="helm-${HELM_VERSION}-linux-amd64.tar.gz" && curl -sSLO https://get.helm.sh/$file && \
-      printf "${HELM_SHA}  ${file}" | sha256sum - && tar zxf ${file} && mv linux-amd64/helm /usr/local/bin/ ) && \
+    ( cd /tmp && file="helm-${HELM_VERSION}-linux-${ARCH}.tar.gz" && curl -sSLO https://get.helm.sh/$file && \
+      printf "${HELM_SHA}  ${file}" | sha256sum - && tar zxf ${file} && mv linux-${ARCH}/helm /usr/local/bin/ ) && \
   ## Install helmfile \
-    ( cd /tmp && file="helmfile_${HELMFILE_VERSION//v/}_linux_amd64.tar.gz" && curl --retry 3 -sSLO \
+    ( cd /tmp && file="helmfile_${HELMFILE_VERSION//v/}_linux_${ARCH}.tar.gz" && curl --retry 3 -sSLO \
         "https://github.com/helmfile/helmfile/releases/download/${HELMFILE_VERSION}/$file" && \
       printf "${HELMFILE_SHA} ${file}" | sha256sum -c && tar zxf ${file} && mv helmfile /usr/local/bin/ ) && \
   ## Install sops \
     ( cd /usr/local/bin && curl -sSLo sops \
-        "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64" && \
+        "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.${ARCH}" && \
       printf "${SOPS_SHA}  sops" | sha256sum -c && chmod 755 sops ) && \
   ## Install yq \
     ( cd /usr/local/bin && curl -sSLo yq \
-        "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" && \
+        "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${ARCH}" && \
       printf "${YQ_SHA}  yq" | sha256sum -c && chmod 755 yq ) && \
     rm -rf /tmp/* /var/cache/apk
 
