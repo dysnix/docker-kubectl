@@ -8,7 +8,7 @@ ENV ARCH=${TARGETARCH:-amd64}
 # follow DL4006 (hadolint)
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
-ENV GOSU_VERSION 1.17
+ENV GOSU_VERSION=1.18
 RUN set -eux; \
 	\
 	apk add --no-cache --virtual .gosu-deps \
