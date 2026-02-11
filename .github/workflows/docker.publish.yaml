@@ -8,7 +8,7 @@ jobs:
     name: Delay execution
     runs-on: ubuntu-latest
     steps:
-      ## Easiset way to somehow parallel releases publish
+      ## Easiest way to somehow parallel releases publish
       - run: |
           echo "Delay execution to absorb all tags"
           sleep 180

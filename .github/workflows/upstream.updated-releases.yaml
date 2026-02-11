@@ -17,7 +17,7 @@ jobs:
       versions: ${{ steps.sc.outputs.result }}
 
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         id: sc
         with:
           ## Normalize, remove newlines and escape
@@ -51,7 +51,7 @@ jobs:
         run: |
           if [ "${{ steps.newest-local.outputs.older == 'true' || steps.newest-local.outputs.tag == '' }}" = "true" ]; then
             echo "New upstream release tag: ${{ steps.newest-upstream.outputs.tag }}"
-            echo "::set-output name=version::${{ steps.newest-upstream.outputs.tag }}"
+            echo "version=${{ steps.newest-upstream.outputs.tag }}" >> $GITHUB_OUTPUT
           fi
       -
         uses: actions/checkout@v4

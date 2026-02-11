@@ -39,7 +39,7 @@ jobs:
 
     steps:
       -
-        uses: actions/github-script@v4
+        uses: actions/github-script@v7
         id: set
         with:
           script: |
@@ -55,7 +55,7 @@ jobs:
           extractor_regex: '${{ inputs.version-regex }}'
           extractor_group: 2
       -
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: versions
         if: inputs.version != ''
         with:
@@ -109,7 +109,7 @@ jobs:
         run: |
           latest="${{ matrix.flavor }}"; latest="${latest#default}"
           echo "latest tag: ${latest:-latest}"
-          echo "::set-output name=value::${latest:-latest}"
+          echo "value=${latest:-latest}" >> $GITHUB_OUTPUT
       -
         name: Docker meta
         id: meta
@@ -174,7 +174,7 @@ jobs:
         id: details
         if: always()
         name: Build details
-        uses: actions/github-script@v5
+        uses: actions/github-script@v7
         with:
           script: |
             let published = "${{ steps.build.outcome == 'success' && needs.setup.outputs.push == 'true' }}"
