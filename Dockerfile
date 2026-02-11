@@ -82,7 +82,7 @@ RUN sudo -iu kubectl bash -c 'set -e; \
       helm plugin install https://github.com/jkroepke/helm-secrets; \
       helm plugin install https://github.com/hypnoglow/helm-s3.git; \
       helm plugin install https://github.com/aslafy-z/helm-git.git; \
-      helm plugin install https://github.com/hayorov/helm-gcs.git; \
+      helm plugin install https://github.com/hayorov/helm-gcs.git --version 0.6.3; \
     '
 
 ## Set cache and home for helme (useful for environments which override HOME)
